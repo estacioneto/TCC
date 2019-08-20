@@ -1,6 +1,9 @@
 export class SimpleWorker {
   x = 1;
   getNext(): number {
-    return this.x++;
+    for (let i = 0; i < 1e9; i++) {
+      this.x++;
+    }
+    return this.x;
   }
 }
