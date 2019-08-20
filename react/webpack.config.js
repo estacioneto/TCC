@@ -16,9 +16,14 @@ module.exports = {
     rules: [
       {
         test: /\.(js|jsx|ts|tsx)$/,
-        exclude: /(node_modules|bower_components)/,
+        exclude: /(node_modules|bower_components|workers)/,
         loader: 'babel-loader',
         options: babelConfig,
+      },
+      {
+        test: /\.worker\.js$/,
+        exclude: /(node_modules|bower_components)/,
+        loader: 'babel-loader',
       },
       {
         test: /\.css$/,
