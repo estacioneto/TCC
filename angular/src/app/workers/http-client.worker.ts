@@ -1,4 +1,5 @@
 import { DataSource } from './datasource';
+import { isArray, reduce } from 'lodash';
 
 const BASE_URL = 'http://localhost:3000';
 
@@ -37,19 +38,18 @@ interface Clients {
 }
 
 interface ClientsDefinition {
-  [client: string]: ClientHandler[];
+  [client: string]: ClientHandler | ClientHandler[];
 }
 
 interface ClientHandler {
   url: string;
-  services: string[];
   methods: {
     [k in 'GET' | 'POST' | 'PUT' | 'DELETE']: string;
   };
 }
 
-declare const schema: Schema | null;
-declare const services: any | null;
+// FIXME: NOT ANY
+declare const self: any;
 
 const buildUrl = (baseUrl, endpoint) =>
   `${this.baseUrl}/${
@@ -59,14 +59,38 @@ const buildUrl = (baseUrl, endpoint) =>
 export class HttpClient {
   baseUrl = '';
   clients: Clients;
+  schema: Schema;
 
   constructor(baseUrl: string = BASE_URL) {
     this.baseUrl = baseUrl.endsWith('/')
       ? baseUrl.substr(0, baseUrl.length - 1)
       : baseUrl;
 
-    importScripts(`${this.baseUrl}/services/index.js`);
-    console.log(services);
+    importScripts(`${this.baseUrl}/services/schema.js`);
+    if (self.schema) {
+      this.schema = self.schema;
+      delete self.schema;
+      this.buildClients();
+    }
+  }
+
+  private buildClients(): void {
+    const { clients } = this.schema;
+    this.clients = reduce(
+      clients,
+      (acc, _, client) => {
+        importScripts(`${this.baseUrl}/services/${client}.js`);
+        if (self[client]) {
+          const handler = self[client];
+          delete self[client];
+          return { ...acc, [client]: handler };
+        }
+        return acc;
+      },
+      {} as Clients
+    );
+    console.log(this.clients, self);
+    console.log(this.clients.counter.incrementCounter(null));
   }
 
   async get<T>(

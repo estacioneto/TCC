@@ -5,7 +5,8 @@
     "types": [
       "jasmine",
       "node"
-    ]
+    ],
+    "lib": ["es2018", "dom"]
   },
   "files": [
     "src/test.ts",
