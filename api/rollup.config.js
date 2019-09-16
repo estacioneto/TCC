@@ -13,7 +13,7 @@ export default async function() {
       return {
         input: `services/${service}`,
         output: {
-          dir: "dist/services",
+          dir: "dist/cdn/services",
           entryFileNames: `${name}.js`,
           name,
           format: "umd",

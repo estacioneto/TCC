@@ -1,7 +1,8 @@
+import fs from "fs-extra";
+import path from "path";
 import colors from "colors/safe";
 import express from "express";
 import { Context, Script, createContext, runInContext } from "vm";
-import fetch from "node-fetch";
 import { curry, forEach, isArray } from "lodash";
 
 import { CDN_BASE_URL } from "./constants";
@@ -23,10 +24,11 @@ export type ClientDefinition = {
   };
 };
 
-export async function buildService(service: string, context: Context) {
-  const code = await (await fetch(
-    `${CDN_BASE_URL}/services/${service}.js`
-  )).text();
+async function buildService(service: string, context: Context) {
+  const code = await fs.readFile(
+    path.join(__dirname, "/dist/cdn/services", `${service}.js`),
+    "utf-8"
+  );
   const script = new Script(code);
   script.runInContext(context);
 }
@@ -104,12 +106,12 @@ function createEndpoint(
     console.log(
       colors.blue(
         `Adding handler to: ${colors.bold(
-          `[${method}]: ${client.url} - ${handler}`
+          `[${method}]: /api${client.url} - ${handler}`
         )}`
       )
     );
     router[method.toLowerCase() as "get" | "post" | "put" | "patch" | "delete"](
-      client.url,
+      `/api${client.url}`,
       requestHandler(handler)
     );
   });

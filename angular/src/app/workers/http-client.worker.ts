@@ -1,8 +1,9 @@
 import { DataSource } from './datasource';
 import { isArray, reduce } from 'lodash';
 
-const CDN_URL = 'http://localhost:3000';
-const API_BASE_URL = 'http://localhost:8080/api';
+const BASE_URL = 'http://localhost:8080';
+const CDN_BASE_URL = `${BASE_URL}/cdn`;
+const API_BASE_URL = `${BASE_URL}/api`;
 
 /**
  * Schema example
@@ -66,7 +67,10 @@ export class HttpClient {
   clients: Clients;
   schema: Schema;
 
-  constructor(cdnBaseUrl: string = CDN_URL, apiBaseUrl: string = API_BASE_URL) {
+  constructor(
+    cdnBaseUrl: string = CDN_BASE_URL,
+    apiBaseUrl: string = API_BASE_URL
+  ) {
     this.cdnBaseUrl = buildBaseUrl(cdnBaseUrl);
     this.apiBaseUrl = buildBaseUrl(apiBaseUrl);
 
