@@ -2,15 +2,16 @@
   "clients": {
     "counter": [
       {
-        "url": "/counter",
+        "url": "/counters",
         "methods": {
-          "GET": "getCounter"
+          "GET": "getCounters"
         }
       },
       {
-        "url": "/counter/:id",
+        "url": "/counters/:id",
         "methods": {
-          "GET": "getCounterById"
+          "GET": "getCounterById",
+          "POST": "incrementCounter"
         }
       }
     ]

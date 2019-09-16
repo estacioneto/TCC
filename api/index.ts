@@ -20,8 +20,7 @@ app.use("/cdn/services", express.static(__dirname + "/dist/cdn/services"));
     // API running in https://localhost:8080
     // And this is the schema:
     try {
-      const servicesContext = await buildClients(schema);
-      await buildEndpoints(app, schema, servicesContext);
+      await buildEndpoints(app, schema);
 
       console.log(
         colors.green(

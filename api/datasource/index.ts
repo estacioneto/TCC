@@ -3,16 +3,11 @@ import path from "path";
 import low from "lowdb";
 import FileAsync from "lowdb/adapters/FileAsync";
 
-interface Stored<T> {
-  id: string | number;
-  data: T;
-}
+import { IDataSource, DBSchema, Stored } from "db-types";
 
-type Schema = { [k: string]: Stored<any>[] };
-
-export class DataSource {
-  private static _db: low.LowdbAsync<Schema>;
-  private static get db(): Promise<low.LowdbAsync<Schema>> {
+export class DataSource implements IDataSource {
+  private static _db: low.LowdbAsync<DBSchema>;
+  private static get db(): Promise<low.LowdbAsync<DBSchema>> {
     if (DataSource._db) {
       return (async () => DataSource._db)();
     }
@@ -34,11 +29,11 @@ export class DataSource {
       .write();
   }
 
-  async read(collection: string) {
+  async read<T>(collection: string) {
     return (await DataSource.db).get(collection).value();
   }
 
-  async update<T>(collection: keyof Schema, id: string | number, data: T) {
+  async update<T>(collection: keyof DBSchema, id: string | number, data: T) {
     return (await DataSource.db)
       .update(collection, c =>
         c.map((element: Stored<T>) =>
