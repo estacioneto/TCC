@@ -1,7 +1,8 @@
 import { DataSource } from './datasource';
 import { isArray, reduce } from 'lodash';
 
-const BASE_URL = 'http://localhost:3000';
+const CDN_URL = 'http://localhost:3000';
+const API_BASE_URL = 'http://localhost:8080/api';
 
 /**
  * Schema example
@@ -56,22 +57,26 @@ const buildUrl = (baseUrl, endpoint) =>
     endpoint.startsWith('/') ? endpoint.substring(1) : endpoint
   }`;
 
+const buildBaseUrl = url =>
+  url.endsWith('/') ? url.substr(0, url.length - 1) : url;
+
 export class HttpClient {
-  baseUrl = '';
+  cdnBaseUrl = '';
+  apiBaseUrl = '';
   clients: Clients;
   schema: Schema;
 
-  constructor(baseUrl: string = BASE_URL) {
-    this.baseUrl = baseUrl.endsWith('/')
-      ? baseUrl.substr(0, baseUrl.length - 1)
-      : baseUrl;
+  constructor(cdnBaseUrl: string = CDN_URL, apiBaseUrl: string = API_BASE_URL) {
+    this.cdnBaseUrl = buildBaseUrl(cdnBaseUrl);
+    this.apiBaseUrl = buildBaseUrl(apiBaseUrl);
 
-    importScripts(`${this.baseUrl}/services/schema.js`);
-    if (self.schema) {
-      this.schema = self.schema;
-      delete self.schema;
+    this.fetchSchema().then(() => {
       this.buildClients();
-    }
+    });
+  }
+
+  private async fetchSchema(): Promise<void> {
+    this.schema = await (await fetch(`${this.apiBaseUrl}/schema`)).json();
   }
 
   private buildClients(): void {
@@ -79,7 +84,7 @@ export class HttpClient {
     this.clients = reduce(
       clients,
       (acc, _, client) => {
-        importScripts(`${this.baseUrl}/services/${client}.js`);
+        importScripts(`${this.cdnBaseUrl}/services/${client}.js`);
         if (self[client]) {
           const handler = self[client];
           delete self[client];
@@ -97,7 +102,7 @@ export class HttpClient {
     endpoint: string = '',
     options?: Partial<RequestInit>
   ): Promise<T> {
-    return (await fetch(buildUrl(this.baseUrl, endpoint), options)).json();
+    return (await fetch(buildUrl(this.apiBaseUrl, endpoint), options)).json();
   }
 
   async post<T>(
@@ -105,7 +110,7 @@ export class HttpClient {
     data: any,
     options?: Partial<RequestInit>
   ): Promise<T> {
-    return (await fetch(buildUrl(this.baseUrl, endpoint), {
+    return (await fetch(buildUrl(this.apiBaseUrl, endpoint), {
       ...options,
       body: data,
       method: 'POST',
@@ -117,7 +122,7 @@ export class HttpClient {
     data: any,
     options?: Partial<RequestInit>
   ): Promise<T> {
-    return (await fetch(buildUrl(this.baseUrl, endpoint), {
+    return (await fetch(buildUrl(this.apiBaseUrl, endpoint), {
       ...options,
       body: data,
       method: 'PUT',
@@ -129,7 +134,7 @@ export class HttpClient {
     data: any,
     options?: Partial<RequestInit>
   ): Promise<T> {
-    return (await fetch(buildUrl(this.baseUrl, endpoint), {
+    return (await fetch(buildUrl(this.apiBaseUrl, endpoint), {
       ...options,
       body: data,
       method: 'DELETE',
