@@ -5,13 +5,13 @@ import commonjs from "rollup-plugin-commonjs";
 import typescript from "rollup-plugin-typescript";
 
 export default async function() {
-  const services = await fs.readdir(path.join(__dirname, "services"));
+  const services = await fs.readdir(path.join(__dirname, "cdn/services"));
   return services
     .filter(service => service.endsWith(".ts")) // Only .ts files will be bundled
     .map(service => {
       const [name] = service.split(".");
       return {
-        input: `services/${service}`,
+        input: `cdn/services/${service}`,
         output: {
           dir: "dist/cdn/services",
           entryFileNames: `${name}.js`,
