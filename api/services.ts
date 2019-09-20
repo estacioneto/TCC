@@ -66,10 +66,12 @@ const handleRequest = curry(
     try {
       const response = await service[handler](db, req);
       // TODO: Better status handling
-      return res.status(req.method === "GET" ? 200 : 201).json(response);
+      return res
+        .status(response.status || (req.method === "POST" ? 201 : 200))
+        .json(response.json || response);
     } catch (e) {
       // TODO: Better error handling (if no handler found, another status should be sent)
-      return res.status(e.status || 400).send(e);
+      return res.status(e.status || 500).send(e);
     }
   }
 );
