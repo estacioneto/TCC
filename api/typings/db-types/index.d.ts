@@ -1,6 +1,6 @@
 declare module "db-types" {
   interface Stored<T> {
-    id: string | number;
+    id: string;
     data: T;
   }
 
@@ -8,13 +8,12 @@ declare module "db-types" {
 
   interface IDataSource {
     ready(): Promise<boolean>;
-    create<T>(collection: string, data: T): Promise<Stored<T>[]>;
-    read<T>(collection: string): Promise<Stored<T>[]>;
-    update<T>(
+    create<T>(collection: string, data: T): Promise<ArrayLike<Stored<T>>>;
+    read<T>(
       collection: string,
-      id: string | number,
-      data: T
-    ): Promise<Stored<T>>;
-    delete<T>(collection: string, id: string | number): Promise<Stored<T>[]>;
+      id?: string
+    ): Promise<Stored<T>[] | Stored<T> | null>;
+    update<T>(collection: string, id: string, data: T): Promise<Stored<T>>;
+    delete<T>(collection: string, id?: string): Promise<Stored<T>[] | null>;
   }
 }

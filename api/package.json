@@ -9,7 +9,10 @@
     "prestart": "yarn",
     "start": "ts-node index.ts",
     "dev": "nodemon",
-    "test": "echo \"NO TESTS FOUND\""
+    "pretest": "cp datasource/db.json datasource/db.test.json",
+    "test": "NODE_ENV=test jest",
+    "posttest": "rm datasource/db.test.json",
+    "coverage": "yarn pretest && NODE_ENV=test jest --coverage && yarn posttest"
   },
   "author": "estacioneto",
   "license": "ISC",
@@ -26,16 +29,19 @@
   "devDependencies": {
     "@types/cors": "^2.8.6",
     "@types/fs-extra": "^8.0.0",
+    "@types/jest": "^24.0.18",
     "@types/lodash": "^4.14.138",
     "@types/lowdb": "^1.0.9",
     "@types/morgan": "^1.7.37",
     "@types/node": "^12.7.4",
     "@types/node-fetch": "^2.5.0",
+    "jest": "^24.9.0",
     "nodemon": "^1.19.2",
     "rollup": "^1.21.2",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-typescript": "^1.0.1",
+    "ts-jest": "^24.1.0",
     "ts-node": "^8.3.0",
     "tslib": "^1.10.0",
     "typescript": "^3.6.2"
