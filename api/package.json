@@ -49,7 +49,8 @@
   "nodemonConfig": {
     "exec": "yarn build && yarn start",
     "ignore": [
-      "dist/*"
+      "dist/*",
+      "db.json"
     ],
     "ext": "js,ts,json"
   }

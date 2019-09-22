@@ -1,19 +1,33 @@
 {
-  "clients": {
-    "counter": [
-      {
-        "url": "/counters",
-        "methods": {
-          "GET": "getCounters"
-        }
-      },
-      {
-        "url": "/counters/:id",
-        "methods": {
-          "GET": "getCounterById",
-          "POST": "incrementCounter"
-        }
+  "cdnUrl": "/cdn/services",
+  "routes": {
+    "/counters": {
+      "GET": {
+        "service": "counter",
+        "handler": "getCounters"
       }
-    ]
+    },
+    "/counters/:id": {
+      "GET": {
+        "service": "counter",
+        "handler": "getCounterById"
+      },
+      "POST": {
+        "service": "counter",
+        "handler": "incrementCounter"
+      }
+    },
+    "/incremented/:id": {
+      "GET": [
+        {
+          "service": "counter",
+          "handler": "incrementCounter"
+        },
+        {
+          "service": "counter",
+          "handler": "getCounterById"
+        }
+      ]
+    }
   }
 }

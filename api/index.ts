@@ -6,7 +6,7 @@ import colors from "colors/safe";
 
 import schema from "./schema/schema.json";
 
-import { buildEndpoints, buildClients } from "./services";
+import { buildEndpoints, buildClients } from "./builder";
 
 const app = express();
 const port = process.env.PORT || 8080;

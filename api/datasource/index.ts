@@ -49,7 +49,7 @@ export class DataSource implements IDataSource {
     return (await DataSource.db)
       .get(collection)
       .find({ id })
-      .assign(data)
+      .assign({ data })
       .write();
   }
 
