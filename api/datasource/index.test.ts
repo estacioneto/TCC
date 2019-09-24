@@ -32,7 +32,7 @@ describe("DataSource", () => {
       expect(await db.read(collection)).toEqual(createResult);
       expect(createResult).not.toBeNull();
 
-      const [oldEntity] = Array.from(createResult);
+      const [oldEntity] = createResult;
 
       const newEntity = { data: "updated entity" };
       const updateResult = await db.update(collection, oldEntity.id, newEntity);
@@ -44,22 +44,28 @@ describe("DataSource", () => {
   });
 
   describe("delete", () => {
-    it("should correctly delete an entity from a collection", async () => {
+    it("should correctly delete a single entity from a collection", async () => {
       const entity = {
+        data: "deleted entity"
+      };
+      const entityB = {
         data: "new entity"
       };
 
-      const createResult = await db.create(collection, entity);
+      await db.create(collection, entity);
+      const createResult = await db.create(collection, entityB);
       expect(await db.read(collection)).toEqual(createResult);
       expect(createResult).not.toBeNull();
 
-      const [storedEntity] = Array.from(createResult);
+      const [storedEntity] = createResult;
 
       const deletedEntity = await db.delete(collection, storedEntity.id);
       const deleteResult = await db.read(collection);
 
-      expect(deleteResult).toEqual(createResult);
+      expect(deleteResult).not.toEqual(createResult);
       expect(deleteResult).not.toContain(deletedEntity);
+      expect(deleteResult).toHaveLength(createResult.length - 1);
+
       expect(deletedEntity).toEqual(storedEntity);
 
       await db.delete(collection);

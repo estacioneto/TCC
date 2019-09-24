@@ -29,10 +29,12 @@ export class DataSource implements IDataSource {
     if (!(await (await DataSource.db).has(collection).value())) {
       await (await DataSource.db).set(collection, []).write();
     }
-    return (await DataSource.db)
-      .get(collection)
-      .push({ id: Date.now().toString(), data })
-      .write();
+    return Array.from(
+      await (await DataSource.db)
+        .get(collection)
+        .push({ id: Date.now().toString(), data })
+        .write()
+    );
   }
 
   async read<T>(collection: string, id?: string) {

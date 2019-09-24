@@ -8,7 +8,7 @@ declare module "db-types" {
 
   interface IDataSource {
     ready(): Promise<boolean>;
-    create<T>(collection: string, data: T): Promise<ArrayLike<Stored<T>>>;
+    create<T>(collection: string, data: T): Promise<Stored<T>[]>;
     read<T>(
       collection: string,
       id?: string
