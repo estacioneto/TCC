@@ -1,0 +1,20 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "outDir": "./dist/app",
+    "sourceMap": true,
+    "target": "es5",
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "lib": ["es2018"],
+    "typeRoots": ["./node_modules/@types", "./typings"],
+    "importHelpers": true
+  },
+  "include": ["./typings/*.d.ts", "./**/*.ts"],
+  "exclude": ["node_modules", "./**/*.worker.ts"]
+}
