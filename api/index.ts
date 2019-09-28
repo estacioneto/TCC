@@ -15,6 +15,8 @@ app.use(cors());
 app.use(morgan("combined"));
 app.use("/cdn/services", express.static(__dirname + "/dist/cdn/services"));
 
+app.get("/api/schema", (req, res) => res.send(schema));
+
 (async () => {
   app.listen(port, async () => {
     // API running in https://localhost:8080

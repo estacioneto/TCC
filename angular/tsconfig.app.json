@@ -1,9 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "outDir": "./out-tsc/app",
-    "types": [],
-    "lib": ["es2018", "dom"]
-  },
-  "exclude": ["test.ts", "**/*spec.ts", "**/*.worker.ts"]
-}

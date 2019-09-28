@@ -1,0 +1,8 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../dist/out-worker",
+    "lib": ["esnext", "webworker"]
+  },
+  "include": ["./**/*.worker.ts"]
+}

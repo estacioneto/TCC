@@ -8,13 +8,14 @@ export default async function() {
     output: {
       dir: "dist/",
       entryFileNames: "worker.js",
-      format: "umd"
+      format: "umd",
+      
     },
     plugins: [
       resolve(), // so Rollup can find external libraries
       commonjs(), // so Rollup can convert libraries to ES module
       typescript({
-        tsconfig: "./tsconfig.worker.json"
+        tsconfig: "./worker/tsconfig.json"
       }) // so Rollup can convert TypeScript to JavaScript
     ]
   };

@@ -1,7 +1,5 @@
 const path = require('path')
 const webpack = require('webpack')
-const WorkerPlugin = require('worker-plugin')
-
 const babelConfig = require('./babel.config.js')
 
 module.exports = {
@@ -21,11 +19,6 @@ module.exports = {
         options: babelConfig,
       },
       {
-        test: /\.worker\.js$/,
-        exclude: /(node_modules|bower_components)/,
-        loader: 'babel-loader',
-      },
-      {
         test: /\.css$/,
         use: ['style-loader', 'css-loader'],
       },
@@ -38,6 +31,9 @@ module.exports = {
     filename: 'bundle.js',
   },
   devServer: {
+    proxy: {
+      '/service-worker': 'http://localhost:8081/',
+    },
     contentBase: [path.join(__dirname, 'public/')],
     port: 3000,
     publicPath: 'http://localhost:3000/dist/',
@@ -47,6 +43,5 @@ module.exports = {
   plugins: [
     new webpack.NamedModulesPlugin(),
     new webpack.HotModuleReplacementPlugin(),
-    new WorkerPlugin(),
   ],
 }
