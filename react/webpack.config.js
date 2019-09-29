@@ -33,6 +33,7 @@ module.exports = {
   devServer: {
     proxy: {
       '/service-worker': 'http://localhost:8081/',
+      '/cdn': 'http://localhost:8080/',
     },
     contentBase: [path.join(__dirname, 'public/')],
     port: 3000,

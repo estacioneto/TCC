@@ -4,7 +4,7 @@ import typescript from "rollup-plugin-typescript";
 
 export default async function() {
   return {
-    input: "worker/index.worker.ts",
+    input: "worker/service.worker.ts",
     output: {
       dir: "dist/",
       entryFileNames: "worker.js",
