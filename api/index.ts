@@ -1,4 +1,6 @@
 import { createContext, Script } from 'vm'
+import path from 'path'
+import fs from 'fs-extra'
 import express from 'express'
 import morgan from 'morgan'
 import cors from 'cors'
@@ -13,10 +15,16 @@ const port = process.env.PORT || 8080
 
 app.use(cors())
 app.use(morgan('combined'))
-app.use('/cdn/services', express.static(__dirname + '/dist/cdn/services'))
+app.use(
+  '/cdn/services',
+  express.static(path.join(__dirname, '/dist/cdn/services'))
+)
 
 app.get('/api/schema', (req, res) => res.send(schema))
-
+app.get('/api/collections', async (req, res) =>
+  // Could have more logic involved
+  res.send(await fs.readJSON(path.join(__dirname, '/datasource/db.json')))
+)
 ;(async () => {
   app.listen(port, async () => {
     // API running in https://localhost:8080

@@ -1,7 +1,7 @@
 import { IDataSource, Stored } from 'db-types'
 
 let x = 1
-const COUNTER_COLLECTION = 'counter'
+const COUNTER_COLLECTION = 'counters'
 
 export default {
   getCounters(db: IDataSource) {

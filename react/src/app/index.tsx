@@ -15,7 +15,7 @@ const App: React.FC<{}> = () => {
       <div>(counter: {counter})</div>
       <button
         onClick={() =>
-          fetch('http://localhost:8080/api/counters')
+          fetch('http://localhost:8080/api/counters/')
             .then(res => res.json())
             .then(response => {
               console.log(response)
