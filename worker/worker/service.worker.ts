@@ -148,8 +148,8 @@ async function handleSchemaRoutes(schema: Schema) {
 
             matcher[method as HTTPMethod].push([
               ...endpointMatch,
-              definitionArr.map(
-                ({ service, handler }) => services[service][handler]
+              definitionArr.map(({ service, handler }) =>
+                services[service][handler].bind(services[service])
               ),
               route,
             ] as RouteMatcher)
@@ -216,9 +216,41 @@ const queue = new backgroundSync.Queue('background-queue', {
   onSync: async _queue => {
     const queue: typeof _queue = (_queue as any).queue
 
-    logger.debug('TODO', queue)
-    // TODO: Replay request
-    // TODO: Update indexeddb via localForage
+    logger.debug('Replaying requests...')
+    let queueEntry = null
+    do {
+      queueEntry = await queue.shiftRequest()
+      if (queueEntry) {
+        logger.groupCollapsed(`Replaying request to ${queueEntry.request.url}`)
+        try {
+          const response = await fetch(queueEntry.request)
+          logger.debug('Response:', response)
+          if (response.ok) {
+            logger.log('Response successful!')
+          } else {
+            logger.debug(
+              'Response has error status. What should we do? TODOOOOO!!!'
+            )
+          }
+        } catch (err) {
+          logger.error(
+            'Failed to fetch! Adding request to the begining of the queue',
+            err
+          )
+          queue.unshiftRequest(queueEntry)
+          // Something went wrong and we need to replay it again later
+        } finally {
+          logger.groupEnd()
+        }
+      }
+    } while (queueEntry)
+    if (!queueEntry) {
+      logger.log(
+        'Queue empty! All requests were fulfilled. Updating collections...'
+      )
+      await updateCollections()
+      logger.debug('Collections updated!')
+    }
   },
   maxRetentionTime: Infinity,
 })
@@ -236,7 +268,15 @@ function getRouteMatcher(request: Request): RouteMatcher | null {
 async function handleRequest(event: FetchEvent, matcher: RouteMatcher) {
   try {
     // Needs the await to catch the error
-    return await fetch(event.request)
+    const response = await fetch(event.request)
+    if (event.request.method !== 'GET' && response.ok) {
+      // No need to wait that to return
+      logger.log('Response successful! UpCollections updated!')
+      updateCollections().then(() => {
+        logger.debug('Collections updated!')
+      })
+    }
+    return response
   } catch (err) {
     // Error while fetching. Not something about error status. These doesn't throw
     logger.error('Error while trying to fetch -', err)
@@ -274,7 +314,7 @@ async function handleRequest(event: FetchEvent, matcher: RouteMatcher) {
     }
 
     if (request.method !== 'GET') {
-      await queue.unshiftRequest({
+      await queue.pushRequest({
         request,
         timestamp: Date.now(),
         metadata: null,

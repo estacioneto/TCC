@@ -10,8 +10,8 @@ export default {
   async getCounterById(db: IDataSource, options: any): Promise<Stored<number>> {
     const id = options.params.id
     const counters = (await db.read<number>(COUNTER_COLLECTION)) || []
-    const counter = (counters instanceof Array ? counters : [counters]).find(
-      counter => counter.id === id
+    const counter = (counters as Stored<number>[]).find(
+      c => c.id === id
     )
 
     if (!counter) {
@@ -24,7 +24,6 @@ export default {
     return counter
   },
   async incrementCounter(db: IDataSource, options: any) {
-    console.log('increment')
     const counter = await this.getCounterById(db, options)
     const id = options.params.id
     return db.update(COUNTER_COLLECTION, id, counter.data + 1)
