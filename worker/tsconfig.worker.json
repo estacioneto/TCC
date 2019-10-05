@@ -4,5 +4,5 @@
     "outDir": "./dist/out-worker",
     "lib": ["es2018", "webworker"]
   },
-  "include": ["./**/*.worker.ts"]
+  "include": ["./typings/**/*.d.ts", "./**/*.worker.ts"]
 }

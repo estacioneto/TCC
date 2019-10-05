@@ -7,7 +7,10 @@ import localForage from 'localforage'
 
 import forEach from 'lodash/forEach'
 import isArray from 'lodash/isArray'
+import isEqual from 'lodash/isEqual'
 import omit from 'lodash/omit'
+
+import { Queue, QueueEntry } from 'workbox-types'
 
 import { DataSource } from '../datasource'
 import { logger } from './logger'
@@ -212,46 +215,56 @@ self.addEventListener('activate', event => {
   event.waitUntil(onActivation(event))
 })
 
-const queue = new backgroundSync.Queue('background-queue', {
-  onSync: async _queue => {
-    const queue: typeof _queue = (_queue as any).queue
+async function handleErrorStatus(
+  queue: Queue,
+  entry: QueueEntry,
+  response: Response
+) {
+  logger.error("I don't know what to do yet :/")
+}
 
-    logger.debug('Replaying requests...')
-    let queueEntry = null
-    do {
-      queueEntry = await queue.shiftRequest()
-      if (queueEntry) {
-        logger.groupCollapsed(`Replaying request to ${queueEntry.request.url}`)
-        try {
-          const response = await fetch(queueEntry.request)
-          logger.debug('Response:', response)
-          if (response.ok) {
-            logger.log('Response successful!')
-          } else {
-            logger.debug(
-              'Response has error status. What should we do? TODOOOOO!!!'
-            )
-          }
-        } catch (err) {
-          logger.error(
-            'Failed to fetch! Adding request to the begining of the queue',
-            err
-          )
-          queue.unshiftRequest(queueEntry)
-          // Something went wrong and we need to replay it again later
-        } finally {
-          logger.groupEnd()
+async function onSync({ queue }: { queue: Queue }) {
+  logger.debug('Replaying requests...')
+  let queueEntry = null
+  do {
+    queueEntry = await queue.shiftRequest()
+    if (queueEntry) {
+      logger.groupCollapsed(`Replaying request to ${queueEntry.request.url}`)
+      try {
+        const response = await fetch(queueEntry.request)
+        logger.debug('Response:', response)
+        if (response.ok) {
+          logger.log('Response successful!')
+        } else {
+          logger.debug('Response has error status. Handling it...')
+          await handleErrorStatus(queue, queueEntry, response)
+          break
         }
+      } catch (err) {
+        logger.error(
+          'Failed to fetch! Adding request to the begining of the queue',
+          err
+        )
+        // Something went wrong and we need to replay it again later
+        queue.unshiftRequest(queueEntry)
+        break
+      } finally {
+        logger.groupEnd()
       }
-    } while (queueEntry)
-    if (!queueEntry) {
-      logger.log(
-        'Queue empty! All requests were fulfilled. Updating collections...'
-      )
-      await updateCollections()
-      logger.debug('Collections updated!')
     }
-  },
+  } while (queueEntry)
+  if (!queueEntry) {
+    logger.log(
+      'Queue empty! All requests were fulfilled. Updating collections...'
+    )
+    await updateCollections()
+    logger.debug('Collections updated!')
+    logger.log('Sync finished successfully! Should message the Main Thread?')
+  }
+}
+
+const queue = new backgroundSync.Queue('background-queue', {
+  onSync,
   maxRetentionTime: Infinity,
 })
 

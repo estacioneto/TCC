@@ -450,9 +450,9 @@
   integrity sha512-l42BggppR6zLmpfU6fq9HEa2oGPEI8yrSPL3GITjfRInppYFahObbIQOQK3UGxEnyQpltZLaPe75046NOZQikw==
 
 "@types/workbox-sw@^4.2.0":
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/@types/workbox-sw/-/workbox-sw-4.2.0.tgz#b867c7143e84bb30407c40c42712c2cdf107a949"
-  integrity sha512-eKk2yrlCuLNmBInQ08FqIcRlMT1ghIo2P7wZW/jAQw0l9ozPYrebcqxnsg2NN+TGRVcMEYGfP05AxmIaxQIArg==
+  version "4.2.1"
+  resolved "https://registry.yarnpkg.com/@types/workbox-sw/-/workbox-sw-4.2.1.tgz#82ce3443e6d3cddb7ca074169e67df9c8982e624"
+  integrity sha512-bQU81IdkEJ7XEmIi5YP2eQam/QIawKEcb/vVI8p2TZX36YfPdEJPWTLRsAhQW9n4z5pGfNOH7usMDBxfOxKniA==
 
 "@types/yargs-parser@*":
   version "13.1.0"
