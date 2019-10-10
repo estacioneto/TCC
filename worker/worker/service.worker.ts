@@ -73,6 +73,10 @@ let services: {
 } = {}
 let schema: Schema
 
+type WorkerStatus = 'UP_TO_DATE' | 'OUTDATED'
+
+let status: WorkerStatus = 'UP_TO_DATE'
+
 const matcher: RoutesMatcher = {
   GET: [],
   POST: [],
@@ -171,18 +175,22 @@ async function handleSchemaRoutes(schema: Schema) {
 const db = new DataSource()
 
 async function updateCollections() {
-  const collections = await fetchStrategy
-    .makeRequest({
-      request: `${API_BASE_URL}/api/collections`,
-    })
-    .then(res => res.json())
+  try {
+    const collections = await fetchStrategy
+      .makeRequest({
+        request: `${API_BASE_URL}/api/collections`,
+      })
+      .then(res => res.json())
 
-  logger.groupCollapsed('Putting collections into the indexedDB')
-  for (const collectionName in collections) {
-    logger.log(`- ${collectionName}`, collections[collectionName])
-    await localForage.setItem(collectionName, collections[collectionName])
+    logger.groupCollapsed('Putting collections into the indexedDB')
+    for (const collectionName in collections) {
+      logger.log(`- ${collectionName}`, collections[collectionName])
+      await localForage.setItem(collectionName, collections[collectionName])
+    }
+    logger.groupEnd()
+  } catch {
+    logger.error('Failed to update collections... What should I do?')
   }
-  logger.groupEnd()
 }
 
 async function onActivation(event: ExtendableEvent) {
@@ -231,7 +239,12 @@ async function onSync({ queue }: { queue: Queue }) {
     if (queueEntry) {
       logger.groupCollapsed(`Replaying request to ${queueEntry.request.url}`)
       try {
-        const response = await fetch(queueEntry.request)
+        const syncReq = queueEntry.request.clone()
+        syncReq.headers.append(
+          'Sync-Timestamp',
+          queueEntry.timestamp.toString()
+        )
+        const response = await fetch(syncReq)
         logger.debug('Response:', response)
         if (response.ok) {
           logger.log('Response successful!')
@@ -258,6 +271,7 @@ async function onSync({ queue }: { queue: Queue }) {
       'Queue empty! All requests were fulfilled. Updating collections...'
     )
     await updateCollections()
+    status = 'UP_TO_DATE'
     logger.debug('Collections updated!')
     logger.log('Sync finished successfully! Should message the Main Thread?')
   }
@@ -280,16 +294,19 @@ function getRouteMatcher(request: Request): RouteMatcher | null {
 
 async function handleRequest(event: FetchEvent, matcher: RouteMatcher) {
   try {
-    // Needs the await to catch the error
-    const response = await fetch(event.request)
-    if (event.request.method !== 'GET' && response.ok) {
-      // No need to wait that to return
-      logger.log('Response successful! UpCollections updated!')
-      updateCollections().then(() => {
-        logger.debug('Collections updated!')
-      })
+    if (status === 'UP_TO_DATE') {
+      const response = await fetch(event.request)
+      if (event.request.method !== 'GET' && response.ok) {
+        // No need to wait that to return
+        logger.log('Response successful! UpCollections updated!')
+        updateCollections().then(() => {
+          logger.debug('Collections updated!')
+        })
+      }
+      return response
+    } else {
+      throw Error('Outdated. Must handle offline.')
     }
-    return response
   } catch (err) {
     // Error while fetching. Not something about error status. These doesn't throw
     logger.error('Error while trying to fetch -', err)
@@ -312,6 +329,8 @@ async function handleRequest(event: FetchEvent, matcher: RouteMatcher) {
       {}
     )
 
+    const headers = new Headers()
+    headers.append('From-Worker', 'true')
     let response = null
     for (const index in handlers) {
       try {
@@ -322,11 +341,13 @@ async function handleRequest(event: FetchEvent, matcher: RouteMatcher) {
         logger.groupEnd()
         return new Response(JSON.stringify(e.status ? omit(e, 'status') : e), {
           status: e.status || 500,
+          headers,
         })
       }
     }
 
     if (request.method !== 'GET') {
+      status = 'OUTDATED'
       await queue.pushRequest({
         request,
         timestamp: Date.now(),
@@ -335,6 +356,7 @@ async function handleRequest(event: FetchEvent, matcher: RouteMatcher) {
     }
     const res = new Response(JSON.stringify(response.json || response), {
       status: response.status || request.method === 'POST' ? 201 : 200,
+      headers,
     })
     logger.groupCollapsed('Success response was processed in worker!')
     logger.log(res)

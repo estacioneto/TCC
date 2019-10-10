@@ -144,12 +144,14 @@ const handleRequest = curry(
         response = await service[handler](db, req)
       } catch (e) {
         // Will break and won't run the next handler
+        res.setHeader('From-API', 'true')
         return res
           .status(e.status || 500)
           .send(e.status ? omit(e, 'status') : e)
       }
     }
 
+    res.setHeader('From-API', 'true')
     return res
       .status(response.status || (req.method === 'POST' ? 201 : 200))
       .json(response.json || response)
