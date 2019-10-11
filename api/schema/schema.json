@@ -28,6 +28,14 @@
           "handler": "getCounterById"
         }
       ]
+    },
+    "/generate_string/:id/:length": {
+      "PUT": [
+        {
+          "service": "strings",
+          "handler": "generateString"
+        }
+      ]
     }
   }
 }
