@@ -16,7 +16,7 @@ const App: React.FC<{}> = () => {
     if (data.requests) {
       setTimeout(() => {
         fetch(
-          'http://localhost:8080/api/generate_string/1568400845849/1000',
+          'http://localhost:8080/api/generate_string/1568400845849/1000000',
           {
             method: 'PUT',
           }
@@ -29,7 +29,7 @@ const App: React.FC<{}> = () => {
               requests: Math.max(0, data.requests - 1),
             }))
           })
-      }, 1000)
+      }, 100)
     }
   }, [data])
 
@@ -68,11 +68,11 @@ const App: React.FC<{}> = () => {
           onClick={() => {
             setData({
               ...data,
-              requests: 20,
+              requests: 100,
             })
           }}
         >
-          Generate 20 strings
+          Generate strings
         </button>
       ) : (
         <button
