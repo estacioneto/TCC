@@ -1,10 +1,39 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Typography, Button, Snackbar } from '@material-ui/core'
+import useMediaQuery from '@material-ui/core/useMediaQuery'
+import {
+  createMuiTheme,
+  ThemeProvider,
+  makeStyles,
+  createStyles,
+} from '@material-ui/core/styles'
+import CssBaseline from '@material-ui/core/CssBaseline'
+
 import { useServiceWorker } from './useServiceWorker'
 
-const App: React.FC<{}> = () => {
-  const { updateReady, updateServiceWorker } = useServiceWorker()
+const useStyles = makeStyles(theme =>
+  createStyles({
+    root: {
+      color: theme.palette.success[theme.palette.type],
+    },
+  })
+)
 
+const App: React.FC<{}> = () => {
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
+
+  const theme = useMemo(
+    () =>
+      createMuiTheme({
+        palette: {
+          type: prefersDarkMode ? 'dark' : 'light',
+        },
+      }),
+    [prefersDarkMode]
+  )
+  const styles = useStyles()
+
+  const { updateReady, updateServiceWorker } = useServiceWorker()
   const [timer, setTimer] = useState(1)
   const [data, setData] = useState({
     generatedString: '',
@@ -38,84 +67,101 @@ const App: React.FC<{}> = () => {
   }, [data])
 
   return (
-    <div className="flex flex-column justify-center items-center vh-100">
-      <Typography variant="h3" component="h1">
-        Let's generate strings!
-      </Typography>
-      <Typography variant="h5" component="h2">
-        Open the console to see the Service Worker magic ✨
-      </Typography>
-      <Typography variant="h6" component="h3">
-        A counter to see the app is running: {timer}
-      </Typography>
-      <Typography variant="subtitle1" component="h4">
-        (Just to show the page didn't freeze)
-      </Typography>
-      <div className="mb4 flex flex-column items-center">
-        {data.generatedString && (
-          <>
-            <Typography
-              variant="body1"
-              style={{
-                maxWidth: 500,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                padding: 15,
-              }}
-            >
-              Generated string: {data.generatedString}
-            </Typography>
-            <Typography variant="subtitle2">
-              Size:&nbsp;
-              {new Intl.NumberFormat().format(data.generatedString.length)}
-            </Typography>
-            <Typography variant="subtitle2">
-              Changes: {data.generationNumber}
-            </Typography>
-            <Typography variant="body2">
-              Remaining requests: {data.requests}
-            </Typography>
-            <Typography variant="caption">
-              If the string content is too big it can slow down the browser
-            </Typography>
-          </>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <div className="flex flex-column justify-center items-center vh-100">
+        <Typography variant="h3" component="h1">
+          Let's generate strings!
+        </Typography>
+        <Typography variant="h5" component="h2">
+          Open the console to see the Service Worker magic ✨
+        </Typography>
+        <Typography variant="h6" component="h3">
+          A counter to see the app is running: {timer}
+        </Typography>
+        <Typography variant="subtitle1" component="h4">
+          (Just to show the page didn't freeze)
+        </Typography>
+        <div className="mb4 flex flex-column items-center">
+          {data.generatedString && (
+            <>
+              <Typography
+                variant="body1"
+                style={{
+                  maxWidth: 500,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  padding: 15,
+                }}
+              >
+                Generated string: {data.generatedString}
+              </Typography>
+              <Typography variant="subtitle2">
+                Size:&nbsp;
+                {new Intl.NumberFormat().format(data.generatedString.length)}
+              </Typography>
+              <Typography variant="subtitle2">
+                Changes: {data.generationNumber}
+              </Typography>
+              <Typography variant="body2">
+                Remaining requests: {data.requests}
+              </Typography>
+            </>
+          )}
+        </div>
+        {!data.requests ? (
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={() => {
+              setData({
+                ...data,
+                requests: 100,
+              })
+            }}
+          >
+            Generate strings
+          </Button>
+        ) : (
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={() => {
+              setData({
+                ...data,
+                requests: 0,
+              })
+            }}
+          >
+            Stop generation
+          </Button>
         )}
-      </div>
-      {!data.requests ? (
-        <Button
-          variant="outlined"
-          color="primary"
-          onClick={() => {
-            setData({
-              ...data,
-              requests: 100,
-            })
-          }}
-        >
-          Generate strings
-        </Button>
-      ) : (
-        <Button
-          variant="outlined"
-          color="primary"
-          onClick={() => {
-            setData({
-              ...data,
-              requests: 0,
-            })
-          }}
-        >
-          Stop generation
-        </Button>
-      )}
 
-      <Snackbar
-        message="App update available!"
-        open={updateReady}
-        action={<Button color="primary" onClick={updateServiceWorker}>Refresh</Button>}
-      />
-    </div>
+        <div className="mt4">
+          {!navigator.onLine ? (
+            <Typography variant="caption" color="error">
+              You're offline (response from Service Worker)
+            </Typography>
+          ) : (
+            <Typography variant="caption" className={styles.root}>
+              You're online (response from API when Service Worker is
+              consistent)
+            </Typography>
+          )}
+        </div>
+
+        <Snackbar
+          message="App update available!"
+          open={updateReady}
+          action={
+            <Button color="primary" onClick={updateServiceWorker}>
+              Refresh
+            </Button>
+          }
+        />
+      </div>
+    </ThemeProvider>
   )
 }
 
