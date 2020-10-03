@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react'
+import { Typography, Button, Snackbar } from '@material-ui/core'
+import { useServiceWorker } from './useServiceWorker'
 
 const App: React.FC<{}> = () => {
+  const { updateReady, updateServiceWorker } = useServiceWorker()
+
   const [timer, setTimer] = useState(1)
   const [data, setData] = useState({
     generatedString: '',
@@ -35,18 +39,23 @@ const App: React.FC<{}> = () => {
 
   return (
     <div className="flex flex-column justify-center items-center vh-100">
-      <div>Hello world!</div>
-      <div>(timer: {timer})</div>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
+      <Typography variant="h3" component="h1">
+        Let's generate strings!
+      </Typography>
+      <Typography variant="h5" component="h2">
+        Open the console to see the Service Worker magic ✨
+      </Typography>
+      <Typography variant="h6" component="h3">
+        A counter to see the app is running: {timer}
+      </Typography>
+      <Typography variant="subtitle1" component="h4">
+        (Just to show the page didn't freeze)
+      </Typography>
+      <div className="mb4 flex flex-column items-center">
         {data.generatedString && (
           <>
-            <div
+            <Typography
+              variant="body1"
               style={{
                 maxWidth: 500,
                 whiteSpace: 'nowrap',
@@ -56,15 +65,27 @@ const App: React.FC<{}> = () => {
               }}
             >
               Generated string: {data.generatedString}
-            </div>
-            <div>Size: {data.generatedString.length}</div>
-            <div>Changes: {data.generationNumber}</div>
-            <div>Remaining requests: {data.requests}</div>
+            </Typography>
+            <Typography variant="subtitle2">
+              Size:&nbsp;
+              {new Intl.NumberFormat().format(data.generatedString.length)}
+            </Typography>
+            <Typography variant="subtitle2">
+              Changes: {data.generationNumber}
+            </Typography>
+            <Typography variant="body2">
+              Remaining requests: {data.requests}
+            </Typography>
+            <Typography variant="caption">
+              If the string content is too big it can slow down the browser
+            </Typography>
           </>
         )}
       </div>
       {!data.requests ? (
-        <button
+        <Button
+          variant="outlined"
+          color="primary"
           onClick={() => {
             setData({
               ...data,
@@ -73,9 +94,11 @@ const App: React.FC<{}> = () => {
           }}
         >
           Generate strings
-        </button>
+        </Button>
       ) : (
-        <button
+        <Button
+          variant="outlined"
+          color="primary"
           onClick={() => {
             setData({
               ...data,
@@ -84,8 +107,14 @@ const App: React.FC<{}> = () => {
           }}
         >
           Stop generation
-        </button>
+        </Button>
       )}
+
+      <Snackbar
+        message="App update available!"
+        open={updateReady}
+        action={<Button color="primary" onClick={updateServiceWorker}>Refresh</Button>}
+      />
     </div>
   )
 }

@@ -6,6 +6,10 @@
       name="viewport"
       content="width=device-width, initial-scale=1, shrink-to-fit=no"
     />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+    />
     <title>Generate strings!</title>
   </head>
 
@@ -15,24 +19,5 @@
       You need to enable JavaScript to run this app.
     </noscript>
     <script src="../dist/bundle.js"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/service-worker', { scope: '/' }).then(
-            function(registration) {
-              // Registration was successful
-              console.log(
-                'ServiceWorker registration successful with scope: ',
-                registration.scope
-              )
-            },
-            function(err) {
-              // registration failed :(
-              console.log('ServiceWorker registration failed: ', err)
-            }
-          )
-        })
-      }
-    </script>
   </body>
 </html>
