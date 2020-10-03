@@ -5,9 +5,7 @@ import pathToRegexp from 'path-to-regexp'
 import workboxNamespace from 'workbox-sw'
 import localForage from 'localforage'
 
-import forEach from 'lodash/forEach'
 import isArray from 'lodash/isArray'
-import isEqual from 'lodash/isEqual'
 import omit from 'lodash/omit'
 
 import { Queue, QueueEntry } from 'workbox-types'
@@ -25,7 +23,7 @@ if (!workbox) {
   throw `Boo! Workbox didn't load 😬`
 }
 workbox.setConfig({ debug: true })
-const { routing, strategies, backgroundSync } = workbox
+const { strategies, backgroundSync } = workbox
 
 // --- Workbox configuration
 
@@ -144,7 +142,7 @@ async function handleSchemaRoutes(schema: Schema) {
             )}`
           )
 
-          for (const { service, handler } of definitionArr) {
+          for (const { service } of definitionArr) {
             if (!services[service]) {
               logger.debug(
                 `${service} service was not fetched yet. Fetching...`
@@ -193,7 +191,7 @@ async function updateCollections() {
   }
 }
 
-async function onActivation(event: ExtendableEvent) {
+async function onActivation(_: ExtendableEvent) {
   schema = await fetchStrategy
     .makeRequest({ request: `${API_BASE_URL}/api/schema` })
     .then(res => res.json())
@@ -223,11 +221,14 @@ self.addEventListener('activate', event => {
   event.waitUntil(onActivation(event))
 })
 
-async function handleErrorStatus(
-  queue: Queue,
-  entry: QueueEntry,
-  response: Response
-) {
+self.addEventListener('message', event => {
+  if (event.data.action === 'skipWaiting') {
+    self.skipWaiting()
+  }
+})
+
+
+async function handleErrorStatus(_: Queue, __: QueueEntry, ___: Response) {
   logger.error("I don't know what to do yet :/")
 }
 
@@ -287,7 +288,7 @@ function getRouteMatcher(request: Request): RouteMatcher | null {
 
   return (
     matcher[method as HTTPMethod].find(
-      ([regexp, keys]) => regexp.exec(url) !== null
+      ([regexp]) => regexp.exec(url) !== null
     ) || null
   )
 }
@@ -311,7 +312,7 @@ async function handleRequest(event: FetchEvent, matcher: RouteMatcher) {
     // Error while fetching. Not something about error status. These doesn't throw
     logger.error('Error while trying to fetch -', err)
 
-    const [regexp, keys, handlers, route] = matcher
+    const [regexp, keys, handlers] = matcher
     const { request } = event
     const result: RegExpExecArray = regexp.exec(request.url)!
     logger.groupCollapsed('We have the matcher and the event')
