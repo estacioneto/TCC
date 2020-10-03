@@ -1,0 +1,13 @@
+{
+  "name": "TCC",
+  "version": "0.0.0",
+  "description": "TCC about workers",
+  "main": "index.js",
+  "scripts": {
+    "preinstall":"yarn --cwd react && yarn --cwd api && yarn --cwd worker"
+  },
+  "repository": "https://github.com/estacioneto/TCC",
+  "author": "Estacio Pereira <estacio.pereira@vtex.com.br>",
+  "license": "MIT",
+  "private": true
+}
